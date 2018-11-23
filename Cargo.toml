@@ -1,0 +1,9 @@
+[package]
+name = "file-crypto"
+version = "0.0.1"
+edition = "2018"
+
+[dependencies]
+ring = "0.13"
+clap = "2"
+memmap = "0"
