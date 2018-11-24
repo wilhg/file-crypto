@@ -7,22 +7,24 @@ const KEY_LEN: usize = 32;
 const NONCE_LEN: usize = 12;
 type Nonce = [u8; NONCE_LEN];
 
-pub struct KEY([u8; KEY_LEN]);
-impl KEY {
+pub struct Key([u8; KEY_LEN]);
+impl Key {
     pub fn new() -> Self {
         gen_key()
     }
     pub fn from(s: &str) -> Self {
         let v = decode(s).unwrap();
-        if v.len() > NONCE_LEN {
+        if v.len() > KEY_LEN {
             panic!("Key too long");
         }
-        
+        let result = [0u8; KEY_LEN];
+        result.copy_from_slice(&v);
+        Key(result)
     }
 }
 
 pub struct Encryption {
-    key: KEY,
+    key: Key,
     nonce: Nonce,
     sealing_key: SealingKey,
 }
@@ -32,19 +34,19 @@ impl Encryption {
         Encryption {
             key,
             nonce: gen_nonce(),
-            sealing_key: SealingKey::new(&CHACHA20_POLY1305, &key).unwrap(),
+            sealing_key: SealingKey::new(&CHACHA20_POLY1305, &key.0).unwrap(),
         }
     }
 
     pub fn with_key(key: &str) -> Self {
         Encryption {
-            key: *key,
+            key: key,
             nonce: gen_nonce(),
             sealing_key: SealingKey::new(&CHACHA20_POLY1305, key).unwrap(),
         }
     }
 
-    pub fn key(&self) -> KEY {
+    pub fn key(&self) -> Key {
         self.key
     }
 
@@ -70,7 +72,7 @@ pub struct Decryption {
 }
 
 impl Decryption {
-    pub fn new(key: &KEY, nonce: &Nonce) -> Self {
+    pub fn new(key: &Key, nonce: &Nonce) -> Self {
         Decryption {
             nonce: *nonce,
             opening_key: OpeningKey::new(&CHACHA20_POLY1305, key).unwrap(),
@@ -82,10 +84,10 @@ impl Decryption {
     }
 }
 
-fn gen_key() -> KEY {
+fn gen_key() -> Key {
     let mut key = [0u8; KEY_LEN];
     SystemRandom::new().fill(&mut key).unwrap();
-    key
+    Key(key)
 }
 
 fn gen_nonce() -> Nonce {
