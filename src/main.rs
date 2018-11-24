@@ -1,6 +1,6 @@
 #![feature(toowned_clone_into)]
-extern crate ring;
 extern crate base64;
+extern crate ring;
 
 mod crypto;
 mod file;
@@ -8,9 +8,9 @@ mod file;
 use ring::aead::*;
 
 fn main() {
-    let token = [1u8; 32];
-    let mut en = crypto::Encryption::with_token(&token);
-    let mut de = crypto::Decryption::new(&token, &en.nonce());
+    let key = "MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMDA=";
+    let mut en = crypto::Encryption::with_key(key);
+    let mut de = crypto::Decryption::new(&en.key());
 
     // let mut buf: Vec<u8> = Vec::new();
     // String::from("Af").as_bytes().clone_into(&mut buf);
@@ -19,12 +19,13 @@ fn main() {
     let mut in_out = content.clone();
 
     // The input/output variable need some space for a suffix
-    println!("Tag len {}", CHACHA20_POLY1305.tag_len());
-    for _ in 0..CHACHA20_POLY1305.tag_len() {
-        in_out.push(0);
-    }
+    // println!("Tag len {}", CHACHA20_POLY1305.tag_len());
+    // for _ in 0..CHACHA20_POLY1305.tag_len() {
+    //     in_out.push(0u8);
+    // }
+
     println!("0: {:?}", in_out);
-    en.encrypt(&mut in_out).unwrap();
-    println!("a: {:?}", in_out);
-    println!("b: {:?}", de.decrypt(&mut in_out));
+    let mut b = en.encrypt(&mut in_out).unwrap();
+    println!("a: {:?}", b);
+    println!("b: {:?}", de.decrypt(&mut b));
 }
