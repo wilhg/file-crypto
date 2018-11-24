@@ -1,35 +1,51 @@
 use ring::aead::*;
 use ring::rand::{SecureRandom, SystemRandom};
-use std::io::{Read, Result, Write};
+use std::io::Result;
+use base64::{encode, decode};
 
-type Token = [u8; 32];
-type Nonce = [u8; 12];
+const KEY_LEN: usize = 32;
+const NONCE_LEN: usize = 12;
+type Nonce = [u8; NONCE_LEN];
+
+pub struct KEY([u8; KEY_LEN]);
+impl KEY {
+    pub fn new() -> Self {
+        gen_key()
+    }
+    pub fn from(s: &str) -> Self {
+        let v = decode(s).unwrap();
+        if v.len() > NONCE_LEN {
+            panic!("Key too long");
+        }
+        
+    }
+}
 
 pub struct Encryption {
-    token: Token,
+    key: KEY,
     nonce: Nonce,
     sealing_key: SealingKey,
 }
 impl Encryption {
     pub fn new() -> Self {
-        let token = gen_token();
+        let key = gen_key();
         Encryption {
-            token,
+            key,
             nonce: gen_nonce(),
-            sealing_key: SealingKey::new(&CHACHA20_POLY1305, &token).unwrap(),
+            sealing_key: SealingKey::new(&CHACHA20_POLY1305, &key).unwrap(),
         }
     }
 
-    pub fn with_token(token: &Token) -> Self {
+    pub fn with_key(key: &str) -> Self {
         Encryption {
-            token: *token,
+            key: *key,
             nonce: gen_nonce(),
-            sealing_key: SealingKey::new(&CHACHA20_POLY1305, token).unwrap(),
+            sealing_key: SealingKey::new(&CHACHA20_POLY1305, key).unwrap(),
         }
     }
 
-    pub fn token(&self) -> Token {
-        self.token
+    pub fn key(&self) -> KEY {
+        self.key
     }
 
     pub fn nonce(&self) -> Nonce {
@@ -54,10 +70,10 @@ pub struct Decryption {
 }
 
 impl Decryption {
-    pub fn new(token: &Token, nonce: &Nonce) -> Self {
+    pub fn new(key: &KEY, nonce: &Nonce) -> Self {
         Decryption {
             nonce: *nonce,
-            opening_key: OpeningKey::new(&CHACHA20_POLY1305, token).unwrap(),
+            opening_key: OpeningKey::new(&CHACHA20_POLY1305, key).unwrap(),
         }
     }
 
@@ -66,14 +82,14 @@ impl Decryption {
     }
 }
 
-fn gen_token() -> Token {
-    let mut token = [0u8; 32];
-    SystemRandom::new().fill(&mut token).unwrap();
-    token
+fn gen_key() -> KEY {
+    let mut key = [0u8; KEY_LEN];
+    SystemRandom::new().fill(&mut key).unwrap();
+    key
 }
 
 fn gen_nonce() -> Nonce {
-    let mut nonce = [0u8; 12];
+    let mut nonce = [0u8; NONCE_LEN];
     SystemRandom::new().fill(&mut nonce).unwrap();
     nonce
 }

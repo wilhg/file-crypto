@@ -1,5 +1,6 @@
 #![feature(toowned_clone_into)]
 extern crate ring;
+extern crate base64;
 
 mod crypto;
 mod file;
