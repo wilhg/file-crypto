@@ -5,6 +5,7 @@ use std::io::Result;
 
 const KEY_LEN: usize = 32;
 const NONCE: [u8; 12] = [0u8; 12];
+const AD: [u8; 0] = [0u8; 0];
 
 #[derive(Clone, Copy)]
 pub struct Key([u8; KEY_LEN]);
@@ -34,7 +35,7 @@ impl From<&[u8]> for Key {
         }
         let mut x = key.to_vec();
         for _ in key.len()..KEY_LEN {
-            x.push(0);
+            x.push(0u8);
         }
         let mut result = [0u8; KEY_LEN];
         result.copy_from_slice(&x);
@@ -43,28 +44,13 @@ impl From<&[u8]> for Key {
 }
 
 pub struct Encryption {
-    key: Key,
     sealing_key: SealingKey,
 }
 impl Encryption {
-    pub fn new() -> Self {
-        let key = Key::new();
+    pub fn new(key: Key) -> Self {
         Encryption {
-            key,
             sealing_key: SealingKey::new(&CHACHA20_POLY1305, &key.0).unwrap(),
         }
-    }
-
-    pub fn with_key(input: &str) -> Self {
-        let key = Key::from(input);
-        Encryption {
-            key,
-            sealing_key: SealingKey::new(&CHACHA20_POLY1305, &key.0).unwrap(),
-        }
-    }
-
-    pub fn key(&self) -> Key {
-        self.key
     }
 
     pub fn encrypt(&mut self, buf: &mut [u8]) -> Result<Vec<u8>> {
@@ -87,13 +73,13 @@ pub struct Decryption {
 }
 
 impl Decryption {
-    pub fn new(key: &Key) -> Self {
+    pub fn new(key: Key) -> Self {
         Decryption {
             opening_key: OpeningKey::new(&CHACHA20_POLY1305, &key.0).unwrap(),
         }
     }
 
     pub fn decrypt(&mut self, buf: &mut [u8]) -> Vec<u8> {
-        Vec::from(open_in_place(&self.opening_key, &NONCE, &[], 0, buf).unwrap())
+        Vec::from(open_in_place(&self.opening_key, &NONCE, &AD, 0, buf).unwrap())
     }
 }
