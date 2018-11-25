@@ -1,7 +1,6 @@
 use base64::{decode, encode};
 use ring::aead::*;
 use ring::rand::{SecureRandom, SystemRandom};
-use std::io::Result;
 
 const KEY_LEN: usize = 32;
 const NONCE: [u8; 12] = [0u8; 12];
@@ -49,22 +48,12 @@ pub struct Encryption {
 impl Encryption {
     pub fn new(key: Key) -> Self {
         Encryption {
-            sealing_key: SealingKey::new(&CHACHA20_POLY1305, &key.0).unwrap(),
+            sealing_key: SealingKey::new(&AES_256_GCM, &key.0).unwrap(),
         }
     }
 
-    pub fn encrypt(&mut self, buf: &mut [u8]) -> Result<Vec<u8>> {
-        let mut b = Vec::from(buf);
-        b.extend_from_slice(&vec![0u8; CHACHA20_POLY1305.tag_len()]);
-        seal_in_place(
-            &self.sealing_key,
-            &NONCE,
-            &[],
-            &mut b,
-            CHACHA20_POLY1305.tag_len(),
-        )
-        .unwrap();
-        Ok(b)
+    pub fn encrypt(&mut self, buf: &mut [u8]) -> usize {
+        seal_in_place(&self.sealing_key, &NONCE, &[], buf, AES_256_GCM.tag_len()).unwrap()
     }
 }
 
@@ -75,11 +64,11 @@ pub struct Decryption {
 impl Decryption {
     pub fn new(key: Key) -> Self {
         Decryption {
-            opening_key: OpeningKey::new(&CHACHA20_POLY1305, &key.0).unwrap(),
+            opening_key: OpeningKey::new(&AES_256_GCM, &key.0).unwrap(),
         }
     }
 
-    pub fn decrypt(&mut self, buf: &mut [u8]) -> Vec<u8> {
-        Vec::from(open_in_place(&self.opening_key, &NONCE, &AD, 0, buf).unwrap())
+    pub fn decrypt<'a>(&mut self, buf: &'a mut [u8]) -> &'a mut [u8] {
+        open_in_place(&self.opening_key, &NONCE, &AD, 0, buf).unwrap()
     }
 }
