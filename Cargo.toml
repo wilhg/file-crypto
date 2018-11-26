@@ -6,5 +6,5 @@ edition = "2018"
 [dependencies]
 ring = "0.13"
 base64 = "0"
+memmap = "0"
 # clap = "2"
-# memmap = "0"
