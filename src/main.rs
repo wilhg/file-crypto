@@ -21,10 +21,16 @@ fn main() {
     // de.decrypt(&mut in_out);
     // println!("b: {:?}", in_out);
 
-    let f = File::open("～/Downloads/ideaIU-2018.3.dmg").unwrap();
+    let f = File::open("/Users/wei.huang/Downloads/ubuntu.iso").unwrap();
+    let f2 = OpenOptions::new().read(true).write(true).create(true).open("/Users/wei.huang/Downloads/ideaIU-2018.3.dmg1").unwrap();
     let mut fr = FileReader::new(&f, 0x6400000);
+    let mut fw = FileWriter::new(&f2, f.metadata().unwrap().len() as usize, 0x6400000);
 
-    while let Some(m) = fr.next_mmap() {
-        println!("{:?}", m.len());
+    while let Some(r) = fr.next_mmap() {
+        let mut w = fw.next_mmap().unwrap();
+        println!("{:?}", w.len());
+        w.copy_from_slice(&r);
+        w.flush().unwrap();
     }
 }
+

@@ -67,5 +67,5 @@ impl<'a> FileWriter<'a> {
 
 
 const CYPHER_FILE_HEADER_LEN: usize = 8; // The size of the original file
-const PLAIN_CHUNK_LEN: usize = 0x6400000; // 100Mb
+const PLAIN_CHUNK_LEN: usize = 0x80000; // 512kb = 1 block size
 const CYPHER_CHUNK_LEN: usize = PLAIN_CHUNK_LEN + 16; // 100Mb + tag_len
