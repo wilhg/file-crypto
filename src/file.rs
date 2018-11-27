@@ -18,7 +18,7 @@ impl<'a> FileReader<'a> {
         }
     }
 
-    pub fn get_mmap(&mut self, page: u64) -> Option<Chunk> {
+    pub fn get_chunk(&mut self, page: u64) -> Option<Chunk> {
         let offset = page * self.chunk_size;
         if offset >= self.file_size {
             return None;
@@ -51,7 +51,7 @@ impl<'a> FileWriter<'a> {
         }
     }
 
-    pub fn get_mmap_mut(&mut self, page: u64) -> Option<ChunkMut> {
+    pub fn get_chunk_mut(&mut self, page: u64) -> Option<ChunkMut> {
         let offset = page * self.chunk_size;
         if offset >= self.file_size {
             return None;
@@ -77,6 +77,6 @@ pub struct ChunkMut {
     pub mmap_mut: MmapMut,
 }
 
-const CIPHER_FILE_HEADER_LEN: u64 = 8; // The size of the original file
-pub const PLAIN_CHUNK_LEN: u64 = 0x100000; // 1Mb = 2 block size
-pub const CIPHER_CHUNK_LEN: u64 = PLAIN_CHUNK_LEN + 16; // 1Mb + tag_len
+pub const TAG_LEN: u64 = 16;
+pub const CIPHER_CHUNK_LEN: u64 = 0x100000;
+pub const PLAIN_CHUNK_LEN: u64 = CIPHER_CHUNK_LEN - TAG_LEN;
