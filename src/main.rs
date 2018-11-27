@@ -9,6 +9,7 @@ use self::crypto::*;
 use self::file::*;
 use std::fs::{self, File, OpenOptions};
 use std::sync::atomic::{AtomicUsize, Ordering};
+use rayon;
 
 fn main() {
     let key = Key::from("MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMDA=");
@@ -33,13 +34,14 @@ fn main() {
     let mut fr = FileReader::new(&f, PLAIN_CHUNK_LEN);
     let mut fw = FileWriter::new(&fb, chunk_num * CIPHER_CHUNK_LEN, CIPHER_CHUNK_LEN);
 
-    let mut page = AtomicUsize::new(0);
-    while let Some(r) = fr.get_mmap(page) {
-        https://doc.rust-lang.org/nomicon/atomics.html
-        page+=1;
-    }
-
-    // rayon::scope(|s| {});
+    let counter = AtomicUsize::new(0usize);
+    rayon::scope(|s| {
+        let page = counter.fetch_add(1, Ordering::Relaxed) as u64;
+        let mmap = fr.get_mmap(page);
+        1) + 16 bytes
+        2) encrypt
+        3) write to mmap_mut
+    })
 
     // let mut in_out = b"d".to_vec();
     // in_out.extend_from_slice(&vec![0u8; 16]);

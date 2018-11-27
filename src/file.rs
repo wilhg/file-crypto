@@ -8,6 +8,7 @@ pub struct FileReader<'a> {
     chunk_size: u64,
 }
 
+
 impl<'a> FileReader<'a> {
     pub fn new(file: &File, chunk_size: u64) -> FileReader {
         FileReader {
