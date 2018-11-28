@@ -11,7 +11,7 @@ impl From<u64> for Nonce {
     fn from(n: u64) -> Nonce {
         let mut v = n.to_le_bytes().to_vec(); // le for x86
         v.extend_from_slice(&[0u8; 4]);
-        let mut result = [0u8;12];
+        let mut result = [0u8; 12];
         result.copy_from_slice(&v);
         Nonce(result)
     }
@@ -33,8 +33,11 @@ impl Key {
 
 impl From<&str> for Key {
     fn from(s: &str) -> Self {
-        let key = decode(s).unwrap();
-        Self::from(key.as_slice())
+        if let Ok(key) = decode(s) {
+            Key::from(key.as_slice())
+        } else {
+            Key::from(s.as_bytes())
+        }
     }
 }
 
