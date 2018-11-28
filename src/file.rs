@@ -88,5 +88,5 @@ pub struct ChunkMut {
 }
 
 pub const TAG_LEN: u64 = 16;
-pub const CIPHER_CHUNK_LEN: u64 = 0x100000;
+pub const CIPHER_CHUNK_LEN: u64 = 0x100000; // 1Mb
 pub const PLAIN_CHUNK_LEN: u64 = CIPHER_CHUNK_LEN - TAG_LEN;

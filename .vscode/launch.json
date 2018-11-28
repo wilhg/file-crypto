@@ -4,7 +4,6 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        
         {
             "type": "lldb",
             "request": "launch",
@@ -35,6 +34,26 @@
                 ],
                 "filter": {
                     "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "'file-crypto'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--bin=file-crypto",
+                    "--package=file-crypto",
+                    "async_test"
+                ],
+                "filter": {
+                    "kind": "lib"
                 }
             },
             "args": [],
