@@ -16,7 +16,7 @@ fn sync_bench_en(b: &mut Bencher) {
     let key = Key::from("MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMDA=");
     let mut en = Encryption::new(key);
 
-    let f = File::open("/Users/william/Downloads/ubuntu.dmg").unwrap();
+    let f = File::open("/Users/wei.huang/Downloads/ubuntu.dmg").unwrap();
 
     let f_size = f.metadata().unwrap().len();
     let chunk_num = if f_size % PLAIN_CHUNK_LEN == 0 {
@@ -29,7 +29,7 @@ fn sync_bench_en(b: &mut Bencher) {
         .read(true)
         .write(true)
         .create(true)
-        .open("/Users/william/Downloads/ubuntu2.dmg")
+        .open("/Users/wei.huang/Downloads/ubuntu2.dmg")
         .unwrap();
     let mut fr = FileReader::new(&f, PLAIN_CHUNK_LEN);
     let mut fw = FileWriter::new(
@@ -43,7 +43,7 @@ fn sync_bench_en(b: &mut Bencher) {
         while let Some(chunk) = fr.get_chunk(i) {
             let mut buf = chunk.mmap.to_vec();
             buf.extend_from_slice(&TAG);
-            en.encrypt(&mut buf);
+            en.encrypt(&mut buf, &Nonce::from(i));
             let mut mmap_mut = fw.get_chunk_mut(i).unwrap().mmap_mut;
             mmap_mut.copy_from_slice(&buf);
             mmap_mut.flush().unwrap();

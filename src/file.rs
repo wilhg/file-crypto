@@ -2,6 +2,7 @@ use memmap::{Mmap, MmapMut, MmapOptions};
 use std::fs::{self, File, OpenOptions};
 use std::io::Result;
 
+#[derive(Clone, Copy)]
 pub struct FileReader<'a> {
     file: &'a File,
     file_size: u64,
@@ -18,7 +19,7 @@ impl<'a> FileReader<'a> {
         }
     }
 
-    pub fn get_chunk(&mut self, page: u64) -> Option<Chunk> {
+    pub fn get_chunk(&self, page: u64) -> Option<Chunk> {
         let offset = page * self.chunk_size;
         if offset >= self.file_size {
             return None;
@@ -33,8 +34,13 @@ impl<'a> FileReader<'a> {
             mmap: unsafe { mmap_option.map(&self.file) }.unwrap(),
         })
     }
+
+    pub fn is_page_available(&self, page: u64) -> bool {
+        page * self.chunk_size >= self.file_size
+    }
 }
 
+#[derive(Clone, Copy)]
 pub struct FileWriter<'a> {
     file: &'a File,
     file_size: u64,
@@ -51,7 +57,7 @@ impl<'a> FileWriter<'a> {
         }
     }
 
-    pub fn get_chunk_mut(&mut self, page: u64) -> Option<ChunkMut> {
+    pub fn get_chunk_mut(&self, page: u64) -> Option<ChunkMut> {
         let offset = page * self.chunk_size;
         if offset >= self.file_size {
             return None;
@@ -65,6 +71,10 @@ impl<'a> FileWriter<'a> {
             page: page,
             mmap_mut: unsafe { mmap_option.map_mut(&self.file) }.unwrap(),
         })
+    }
+
+    pub fn is_page_available(&self, page: u64) -> bool {
+        page * self.chunk_size >= self.file_size
     }
 }
 

@@ -3,11 +3,22 @@ use ring::aead::*;
 use ring::rand::{SecureRandom, SystemRandom};
 
 const KEY_LEN: usize = 32;
-const NONCE: [u8; 12] = [0u8; 12];
+const DEFULT_NONCE: Nonce = Nonce([0u8; 12]);
 const AD: [u8; 0] = [0u8; 0];
 
+pub struct Nonce(pub [u8; 12]);
+impl From<u64> for Nonce {
+    fn from(n: u64) -> Nonce {
+        let mut v = n.to_le_bytes().to_vec(); // le for x86
+        v.extend_from_slice(&[0u8; 4]);
+        let mut result = [0u8;12];
+        result.copy_from_slice(&v);
+        Nonce(result)
+    }
+}
+
 #[derive(Clone, Copy)]
-pub struct Key([u8; KEY_LEN]);
+pub struct Key(pub [u8; KEY_LEN]);
 impl Key {
     pub fn new() -> Self {
         let mut key = [0u8; KEY_LEN];
@@ -52,8 +63,8 @@ impl Encryption {
         }
     }
 
-    pub fn encrypt(&mut self, buf: &mut [u8]) -> usize {
-        seal_in_place(&self.sealing_key, &NONCE, &[], buf, AES_256_GCM.tag_len()).unwrap()
+    pub fn encrypt(&mut self, buf: &mut [u8], nonce: &Nonce) -> usize {
+        seal_in_place(&self.sealing_key, &nonce.0, &[], buf, AES_256_GCM.tag_len()).unwrap()
     }
 }
 
@@ -68,7 +79,7 @@ impl Decryption {
         }
     }
 
-    pub fn decrypt<'a>(&mut self, buf: &'a mut [u8]) -> &'a mut [u8] {
-        open_in_place(&self.opening_key, &NONCE, &AD, 0, buf).unwrap()
+    pub fn decrypt<'a>(&mut self, buf: &'a mut [u8], nonce: &Nonce) -> &'a mut [u8] {
+        open_in_place(&self.opening_key, &nonce.0, &AD, 0, buf).unwrap()
     }
 }
