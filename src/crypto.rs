@@ -82,14 +82,18 @@ impl Decryption {
     }
 
     pub fn decrypt<'a>(&self, buf: &'a mut [u8], nonce: &Nonce) -> &'a mut [u8] {
-        open_in_place(&self.opening_key, &nonce.0, &AD, 0, buf).unwrap()
+        if let Ok(result) = open_in_place(&self.opening_key, &nonce.0, &AD, 0, buf) {
+            result
+        } else {
+            panic!("The file cannot be decrypted, maybe your are using a incorrect key :)");
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn cipher() {
         let key = Key::new();

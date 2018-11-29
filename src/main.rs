@@ -1,4 +1,5 @@
 extern crate base64;
+extern crate file_crypto;
 extern crate rayon;
 extern crate ring;
 
@@ -6,10 +7,9 @@ pub mod crypto;
 pub mod file;
 pub mod meta;
 
-use self::crypto::*;
-use self::file::*;
-use self::meta::*;
-use std::fs::{File, OpenOptions};
+use file_crypto::crypto::*;
+use file_crypto::meta::*;
+use file_crypto::*;
 
 extern crate clap;
 use clap::{App, Arg};
@@ -32,7 +32,11 @@ fn main() {
 
      let key = matches
           .value_of("key")
-          .map_or(Key::new(), |k| Key::from(k.as_bytes()));
+          .map_or(Key::new(), |k| Key::from(k));
      let meta = CipherMeta::init(matches.value_of("FILE").unwrap());
 
+     match meta.proc_type {
+          ProcessType::Encrypt => println!("Key: {}\n The encrypted file is at {}", key.base64(), encrypt(key, meta)),
+          ProcessType::Decrypt => println!("The decrypted file is at {}", decrypt(key, meta)),
+     };
 }

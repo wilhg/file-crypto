@@ -9,3 +9,7 @@ base64 = "0"
 memmap = "0"
 rayon = "1"
 clap = "2"
+
+[lib]
+name = "file_crypto"
+path = "src/lib.rs"
