@@ -31,7 +31,7 @@ impl CipherMeta {
         }
         let origin_file_path = String::from(file_path);
         let origin_file = File::open(file_path).expect("File not exists");
-        let gen_file_path: String = match proc_type.clone() {
+        let gen_file_path: String = match proc_type {
             ProcessType::Encrypt => format!("{}{}", origin_file_path, SEALED_SUFFIX),
             ProcessType::Decrypt => {
                 origin_file_path[..origin_file_path.len() - SEALED_SUFFIX.len()].to_string()
@@ -46,7 +46,7 @@ impl CipherMeta {
         let f_size = origin_file.metadata().unwrap().len();
         let chunk_size = Self::calc_chunk_size(f_size);
         let chunk_num = Self::calc_chunk_num(f_size, chunk_size);
-        let gen_file_size = match proc_type.clone() {
+        let gen_file_size = match proc_type {
             ProcessType::Encrypt => f_size + chunk_num * TAG_LEN,
             ProcessType::Decrypt => f_size - chunk_num * TAG_LEN,
         };
@@ -88,7 +88,7 @@ impl CipherMeta {
         }
     }
 }
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Copy)]
 pub enum ProcessType {
     Encrypt,
     Decrypt,
