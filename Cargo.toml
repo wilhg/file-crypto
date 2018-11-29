@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-ring = "0.13"
+ring = "0"
 base64 = "0"
 memmap = "0"
 rayon = "1"
@@ -15,5 +15,5 @@ name = "file_crypto"
 path = "src/lib.rs"
 
 [[bin]]
-name = "file_crypto"
+name = "file-crypto"
 path = "src/main.rs"

@@ -1,7 +1,6 @@
 use memmap::{Mmap, MmapMut, MmapOptions};
 use std::fs::File;
 
-#[derive(Clone, Copy)]
 pub struct FileReader<'a> {
     file: &'a File,
     file_size: u64,
@@ -38,7 +37,6 @@ impl<'a> FileReader<'a> {
     }
 }
 
-#[derive(Clone, Copy)]
 pub struct FileWriter<'a> {
     file: &'a File,
     file_size: u64,
