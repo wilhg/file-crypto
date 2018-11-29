@@ -4,11 +4,12 @@ extern crate ring;
 
 pub mod crypto;
 pub mod file;
+pub mod meta;
 
 use self::crypto::*;
 use self::file::*;
+use self::meta::*;
 use std::fs::{File, OpenOptions};
-use std::sync::atomic::{AtomicUsize, Ordering};
 
 extern crate clap;
 use clap::{App, Arg};
@@ -32,7 +33,6 @@ fn main() {
      let key = matches
           .value_of("key")
           .map_or(Key::new(), |k| Key::from(k.as_bytes()));
+     let meta = CipherMeta::init(matches.value_of("FILE").unwrap());
 
-     TODO put the logic below to lib
-     let origin_file = File::open(matches.value_of("FILE").unwrap()).expect("File not exists");
 }

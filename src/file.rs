@@ -1,6 +1,5 @@
 use memmap::{Mmap, MmapMut, MmapOptions};
-use std::fs::{self, File, OpenOptions};
-use std::io::Result;
+use std::fs::File;
 
 #[derive(Clone, Copy)]
 pub struct FileReader<'a> {
@@ -8,7 +7,6 @@ pub struct FileReader<'a> {
     file_size: u64,
     chunk_size: u64,
 }
-
 
 impl<'a> FileReader<'a> {
     pub fn new(file: &File, chunk_size: u64) -> FileReader {
@@ -88,5 +86,3 @@ pub struct ChunkMut {
 }
 
 pub const TAG_LEN: u64 = 16;
-pub const CIPHER_CHUNK_LEN: u64 = 0x100000; // 1Mb
-pub const PLAIN_CHUNK_LEN: u64 = CIPHER_CHUNK_LEN - TAG_LEN;
