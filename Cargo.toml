@@ -1,6 +1,6 @@
 [package]
 name = "file-crypto"
-version = "0.0.1"
+version = "0.1.0"
 edition = "2018"
 
 [dependencies]
@@ -13,3 +13,7 @@ clap = "2"
 [lib]
 name = "file_crypto"
 path = "src/lib.rs"
+
+[[bin]]
+name = "file_crypto"
+path = "src/main.rs"

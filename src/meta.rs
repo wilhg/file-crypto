@@ -31,6 +31,9 @@ impl CipherMeta {
         }
         let origin_file_path = String::from(file_path);
         let origin_file = File::open(file_path).expect("File not exists");
+        if !origin_file.metadata().unwrap().is_file() {
+            panic!("The file path is incorrect, or it is a dir path");
+        }
         let gen_file_path: String = match proc_type {
             ProcessType::Encrypt => format!("{}{}", origin_file_path, SEALED_SUFFIX),
             ProcessType::Decrypt => {
