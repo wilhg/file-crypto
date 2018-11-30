@@ -6,11 +6,9 @@ extern crate ring;
 extern crate test;
 
 use file_crypto::crypto::*;
-use file_crypto::file::*;
 use file_crypto::meta::*;
 use file_crypto::*;
-use std::fs::{File, OpenOptions};
-use std::time::{Duration, Instant};
+use std::time::Instant;
 use walkdir::WalkDir;
 
 #[test]

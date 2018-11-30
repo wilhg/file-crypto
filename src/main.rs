@@ -12,7 +12,7 @@ fn main() {
      let matches = App::new("File Crypto")
           .version("0.1.0")
           .author("William Huang <william.hng@outlook.com>")
-          .about("Encrypt/Decrypt any file")
+          .about("file-crypto is a platform-cross command line tool for fastly encrypting / decrypting any file with AES-256-GCM")
           .arg(Arg::with_name("encrypt")
                .short("e")
                .long("encrypt")
@@ -46,7 +46,7 @@ fn main() {
      let key = matches.value_of("key").map_or(Key::new(), |k| Key::from(k));
      match meta.proc_type {
           ProcessType::Encrypt => println!(
-               "New Key: {}\n The encrypted file is at {}",
+               "The new key is: {}\n (Please keep the key in the safe way.)\nThe encrypted file is at: {}",
                key.base64(),
                encrypt(key, meta)
           ),

@@ -1,15 +1,16 @@
 # File Crypto
 
-One Paragraph of project description goes here
+A cross-platform command line tool for fastly encrypting / decrypting any file with AES-256-GCM.
 
 ## Getting Started
-
-### Prerequisites
-
 ### Installing
-
 ```bash
 cargo install file-crypto
+```
+
+### Usage
+```bash
+file-crypto --help
 ```
 
 ## Built With

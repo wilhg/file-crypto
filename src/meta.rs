@@ -75,11 +75,10 @@ impl CipherMeta {
     }
 
     fn calc_chunk_size(f_size: u64) -> u64 {
-        if f_size < MIN_CHUNK_SIZE * THREAD_NUM {
-            // 40 Mb
+        if f_size < MIN_CHUNK_SIZE * PARALLEL_NUM {
             MIN_CHUNK_SIZE
         } else {
-            f_size / THREAD_NUM
+            f_size / PARALLEL_NUM
         }
     }
 
@@ -99,4 +98,4 @@ pub enum ProcessType {
 
 const SEALED_SUFFIX: &str = ".fc";
 const MIN_CHUNK_SIZE: u64 = 0x100000; // 1Mb
-const THREAD_NUM: u64 = 64;
+const PARALLEL_NUM: u64 = 64;
