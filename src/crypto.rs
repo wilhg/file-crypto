@@ -1,4 +1,3 @@
-use base64::{decode, encode};
 use ring::aead::*;
 use ring::rand::{SecureRandom, SystemRandom};
 
@@ -26,13 +25,13 @@ impl Key {
     }
 
     pub fn base64(&self) -> String {
-        encode(&self.0)
+        base64::encode(&self.0)
     }
 }
 
 impl From<&str> for Key {
     fn from(s: &str) -> Self {
-        if let Ok(key) = decode(s) {
+        if let Ok(key) = base64::decode(s) {
             Key::from(key.as_slice())
         } else {
             Key::from(s.as_bytes())
