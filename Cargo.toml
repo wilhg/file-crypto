@@ -1,6 +1,6 @@
 [package]
 name = "file-crypto"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2018"
 
 [dependencies]
@@ -9,6 +9,9 @@ base64 = "0"
 memmap = "0"
 rayon = "1"
 clap = "2"
+
+[dev-dependencies]
+walkdir = "2"
 
 [lib]
 name = "file_crypto"

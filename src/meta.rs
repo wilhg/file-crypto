@@ -98,5 +98,5 @@ pub enum ProcessType {
 }
 
 const SEALED_SUFFIX: &str = ".fc";
-const MIN_CHUNK_SIZE: u64 = 0x80000; // 512Kb
-const THREAD_NUM: u64 = 0x80; // 128
+const MIN_CHUNK_SIZE: u64 = 0x100000; // 1Mb
+const THREAD_NUM: u64 = 64;
