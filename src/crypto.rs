@@ -95,6 +95,13 @@ mod tests {
     use super::*;
 
     #[test]
+    fn key() {
+        let s = "abc";
+        let k = Key::from(s);
+        assert_eq!(k.0, Key::from(k.base64().as_str()).0);
+    }
+
+    #[test]
     fn cipher() {
         let key = Key::new();
         let en = Encryption::new(key);

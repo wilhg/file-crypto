@@ -21,6 +21,7 @@ fn cipher_integration() {
     decrypt(key, meta1);
 }
 
+#[ignore]
 #[test]
 fn encrypt_bench() {
     let key = Key::new();

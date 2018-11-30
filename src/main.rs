@@ -43,13 +43,22 @@ fn main() {
           _ => CipherMeta::init(path),
      };
 
-     let key = matches.value_of("key").map_or(Key::new(), |k| Key::from(k));
+     let key = match matches.value_of("key") {
+          Some(s) => {
+               println!("The key is: {}\n (Please keep the key in the safe way.)", s);
+               Key::from(s)
+          }
+          None => {
+               let k = Key::new();
+               println!(
+                    "The key is: {}\n (Please keep the key in the safe way.)",
+                    k.base64()
+               );
+               k
+          }
+     };
      match meta.proc_type {
-          ProcessType::Encrypt => println!(
-               "The new key is: {}\n (Please keep the key in the safe way.)\nThe encrypted file is at: {}",
-               key.base64(),
-               encrypt(key, meta)
-          ),
+          ProcessType::Encrypt => println!("The encrypted file is at: {}", encrypt(key, meta)),
           ProcessType::Decrypt => println!("The decrypted file is at {}", decrypt(key, meta)),
      };
 }
