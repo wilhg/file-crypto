@@ -10,6 +10,7 @@ cargo install file-crypto
 
 ### Usage
 The encrypt/decrypt mode flag can be ignore, the application will detect the mode by the suffix of the file. Encrypted file will be end with `.fc` suffix.
+
 By the way, you can always use the flag `-e` or `-d` to set the encrypt / decrypt mode.
 #### Encrypt file
 ```bash
