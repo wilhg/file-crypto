@@ -31,7 +31,8 @@ impl CipherMeta {
         }
         let origin_file_path = String::from(file_path);
         let origin_file = File::open(file_path).expect("File not exists");
-        if !origin_file.metadata().unwrap().is_file() {
+        let file_metadata = origin_file.metadata().unwrap();
+        if !file_metadata.is_file() {
             panic!("The file path is incorrect, or it is a dir path");
         }
         let gen_file_path: String = match proc_type {
@@ -46,7 +47,10 @@ impl CipherMeta {
             .create(true)
             .open(&gen_file_path)
             .unwrap();
-        let f_size = origin_file.metadata().unwrap().len();
+        let f_size = file_metadata.len();
+        if f_size == 0 {
+            panic!("The input file should not be empty.")
+        }
         let chunk_size = Self::calc_chunk_size(f_size);
         let chunk_num = Self::calc_chunk_num(f_size, chunk_size);
         let gen_file_size = match proc_type {
