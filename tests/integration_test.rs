@@ -14,7 +14,7 @@ use walkdir::WalkDir;
 #[test]
 fn cipher_integration() {
     let key = Key::new();
-    let meta0 = CipherMeta::init("/Users/wei.huang/Downloads/cuebyte-fireman-development.zip");
+    let meta0 = CipherMeta::init("./Cargo.lock");
     let gen_path = encrypt(key, meta0);
 
     let meta1 = CipherMeta::init(&gen_path);
