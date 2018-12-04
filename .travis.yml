@@ -1,7 +1,6 @@
 language: rust
 rust:
   - nightly
+cache: cargo
 matrix:
-  allow_failures:
-    - rust: nightly
   fast_finish: true
