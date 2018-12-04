@@ -1,4 +1,6 @@
 # File Crypto
+[![Build Status](https://travis-ci.com/cuebyte/file-crypto.svg?branch=master)](https://travis-ci.com/cuebyte/file-crypto)
+
 
 A cross-platform command line tool for fastly encrypting / decrypting any file with AES-256-GCM.
 
