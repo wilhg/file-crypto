@@ -1,9 +1,7 @@
-#![feature(test)]
 extern crate base64;
 extern crate file_crypto;
 extern crate rayon;
 extern crate ring;
-extern crate test;
 
 use file_crypto::crypto::*;
 use file_crypto::meta::*;

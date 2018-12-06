@@ -9,6 +9,7 @@ base64 = "0"
 memmap = "0"
 rayon = "1"
 clap = "2"
+byteorder = "1"
 
 [dev-dependencies]
 walkdir = "2"
