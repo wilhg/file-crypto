@@ -1,6 +1,5 @@
 extern crate base64;
 extern crate file_crypto;
-extern crate rayon;
 extern crate ring;
 
 use file_crypto::crypto::*;
