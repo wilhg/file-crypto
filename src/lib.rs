@@ -1,3 +1,5 @@
+#![feature(try_from)]
+
 pub mod crypto;
 pub mod file;
 pub mod meta;
@@ -14,19 +16,23 @@ pub fn encrypt(key: Key, meta: CipherMeta) -> String {
     let fr = FileReader::new(&meta.origin_file, meta.plain_chunk_size());
     let fw = FileWriter::new(&meta.gen_file, meta.gen_file_size, meta.cipher_chunk_size());
 
+    let mut track = vec![0u128; meta.chunk_num as usize]; // u128 = u8 * 16
+
     (0..meta.chunk_num)
         .into_par_iter()
         .map(|i| {
             let chunk = fr.get_chunk(i).unwrap();
             let mut buf = chunk.mmap.to_vec();
             buf.extend_from_slice(&TAG);
+
             (i, buf)
         })
-        .map(|(i, mut buf)| {
+        .map(move |(i, mut buf)| {
             en.encrypt(&mut buf, &Nonce::from(i));
+            track[i as usize] = slice_to_u128(&buf[buf.len() - TAG_LEN as usize..]);
             (i, buf)
         })
-        .for_each(|(i, buf)| {
+        .for_each(|(i, buf)| { 
             let mut mmap_mut = fw.get_chunk_mut(i).unwrap().mmap_mut;
             mmap_mut.copy_from_slice(&buf);
             mmap_mut.flush().unwrap();
@@ -56,4 +62,10 @@ pub fn decrypt(key: Key, meta: CipherMeta) -> String {
             mmap_mut.flush().unwrap();
         });
     meta.gen_file_path
+}
+
+fn slice_to_u128(input: &[u8]) -> u128 {
+    let mut tag = [0u8; 16];
+    tag.copy_from_slice(input);
+    u128::from_be_bytes(tag)
 }

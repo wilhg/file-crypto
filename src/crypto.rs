@@ -7,7 +7,7 @@ const AD: [u8; 0] = [0u8; 0];
 pub struct Nonce(pub [u8; 12]);
 impl From<u64> for Nonce {
     fn from(n: u64) -> Nonce {
-        let mut v = n.to_le_bytes().to_vec(); // le for x86
+        let mut v = n.to_be_bytes().to_vec(); // le for x86
         v.extend_from_slice(&[0u8; 4]);
         let mut result = [0u8; 12];
         result.copy_from_slice(&v);
@@ -115,5 +115,4 @@ mod tests {
         de.decrypt(&mut buf, &Nonce::from(1));
         assert_eq!(content, &buf[..len]);
     }
-
 }

@@ -84,3 +84,4 @@ pub struct ChunkMut {
 }
 
 pub const TAG_LEN: u64 = 16;
+pub const HEADER_LEN: u64 = 512;
