@@ -1,16 +1,14 @@
 use ring::aead::*;
 use ring::rand::{SecureRandom, SystemRandom};
-
+use byteorder::{BE, ByteOrder};
 const KEY_LEN: usize = 32;
 const AD: [u8; 0] = [0u8; 0];
 
 pub struct Nonce(pub [u8; 12]);
 impl From<u64> for Nonce {
     fn from(n: u64) -> Nonce {
-        let mut v = n.to_be_bytes().to_vec(); // le for x86
-        v.extend_from_slice(&[0u8; 4]);
         let mut result = [0u8; 12];
-        result.copy_from_slice(&v);
+        BE::write_u64(&mut result, n);
         Nonce(result)
     }
 }
