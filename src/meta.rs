@@ -6,10 +6,10 @@ pub struct CipherMeta {
     pub origin_file_path: String,
     pub gen_file: File,
     pub gen_file_path: String,
-    pub gen_file_size: u64,
+    pub gen_file_size: usize,
     pub proc_type: ProcessType,
-    chunk_size: u64,
-    pub chunk_num: u64,
+    chunk_size: usize,
+    pub chunk_num: usize,
 }
 
 impl CipherMeta {
@@ -47,7 +47,7 @@ impl CipherMeta {
             .create(true)
             .open(&gen_file_path)
             .unwrap();
-        let f_size = file_metadata.len();
+        let f_size = file_metadata.len() as usize;
         if f_size == 0 {
             panic!("The input file should not be empty.")
         }
@@ -70,15 +70,15 @@ impl CipherMeta {
         }
     }
 
-    pub fn plain_chunk_size(&self) -> u64 {
+    pub fn plain_chunk_size(&self) -> usize {
         self.chunk_size - TAG_LEN
     }
 
-    pub fn cipher_chunk_size(&self) -> u64 {
+    pub fn cipher_chunk_size(&self) -> usize {
         self.chunk_size
     }
 
-    fn calc_chunk_size(f_size: u64) -> u64 {
+    fn calc_chunk_size(f_size: usize) -> usize {
         if f_size < MIN_CHUNK_SIZE * PARALLEL_NUM {
             MIN_CHUNK_SIZE
         } else {
@@ -86,7 +86,7 @@ impl CipherMeta {
         }
     }
 
-    fn calc_chunk_num(f_size: u64, chunk_size: u64) -> u64 {
+    fn calc_chunk_num(f_size: usize, chunk_size: usize) -> usize {
         if f_size % chunk_size == 0 {
             f_size / chunk_size
         } else {
@@ -101,5 +101,5 @@ pub enum ProcessType {
 }
 
 const SEALED_SUFFIX: &str = ".fc";
-const MIN_CHUNK_SIZE: u64 = 0x100000; // 1Mb
-const PARALLEL_NUM: u64 = 64;
+const MIN_CHUNK_SIZE: usize = 0x100000; // 1Mb
+const PARALLEL_NUM: usize = 64;

@@ -5,10 +5,10 @@ const KEY_LEN: usize = 32;
 const AD: [u8; 0] = [0u8; 0];
 
 pub struct Nonce(pub [u8; 12]);
-impl From<u64> for Nonce {
-    fn from(n: u64) -> Nonce {
+impl From<usize> for Nonce {
+    fn from(n: usize) -> Nonce {
         let mut result = [0u8; 12];
-        BE::write_u64(&mut result, n);
+        BE::write_u64(&mut result, n as u64);
         Nonce(result)
     }
 }
