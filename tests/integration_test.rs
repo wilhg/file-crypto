@@ -19,6 +19,26 @@ fn cipher_integration() {
     decrypt(key, meta1);
 }
 
+#[test]
+fn par_reduce() {
+    use rayon::prelude::*;
+    let s0 = (0u32..1000000u32)
+        .into_par_iter()
+        .map(|x| x.to_string())
+        .reduce_with(|mut a, b| {
+            a.push_str(&b);
+            a
+        }).unwrap();
+    let s1 = (0u32..1000000u32)
+        .into_iter()
+        .map(|x| x.to_string())
+        .fold(String::new(), |mut a, b| {
+            a.push_str(&b);
+            a
+        });
+    assert_eq!(s0, s1);
+}
+
 #[ignore]
 #[test]
 fn encrypt_bench() {

@@ -1,5 +1,6 @@
 use ring::aead::*;
 use ring::rand::{SecureRandom, SystemRandom};
+use ring::{digest, hmac};
 use byteorder::{BE, ByteOrder};
 const KEY_LEN: usize = 32;
 const AD: [u8; 0] = [0u8; 0];
@@ -53,37 +54,59 @@ impl From<&[u8]> for Key {
 }
 
 pub struct Encryption {
-    sealing_key: SealingKey,
+    key: SealingKey,
 }
 impl Encryption {
     pub fn new(key: Key) -> Self {
         Encryption {
-            sealing_key: SealingKey::new(&AES_256_GCM, &key.0).unwrap(),
+            key: SealingKey::new(&AES_256_GCM, &key.0).unwrap(),
         }
     }
 
     pub fn encrypt(&self, buf: &mut [u8], nonce: &Nonce) -> usize {
-        seal_in_place(&self.sealing_key, &nonce.0, &[], buf, AES_256_GCM.tag_len()).unwrap()
+        seal_in_place(&self.key, &nonce.0, &[], buf, AES_256_GCM.tag_len()).unwrap()
     }
 }
 
 pub struct Decryption {
-    opening_key: OpeningKey,
+    key: OpeningKey,
 }
 
 impl Decryption {
     pub fn new(key: Key) -> Self {
         Decryption {
-            opening_key: OpeningKey::new(&AES_256_GCM, &key.0).unwrap(),
+            key: OpeningKey::new(&AES_256_GCM, &key.0).unwrap(),
         }
     }
 
     pub fn decrypt<'a>(&self, buf: &'a mut [u8], nonce: &Nonce) -> &'a mut [u8] {
-        if let Ok(result) = open_in_place(&self.opening_key, &nonce.0, &AD, 0, buf) {
+        if let Ok(result) = open_in_place(&self.key, &nonce.0, &AD, 0, buf) {
             result
         } else {
             panic!("The file cannot be decrypted, maybe your are using a incorrect key :)");
         }
+    }
+}
+
+pub struct Hmac {
+    signing_key: hmac::SigningKey,
+    verify_key: hmac::VerificationKey,
+}
+
+impl Hmac {
+    pub fn new(key: Key) -> Self {
+        Hmac {
+            signing_key: hmac::SigningKey::new(&digest::SHA512, &key.0),
+            verify_key: hmac::VerificationKey::new(&digest::SHA512, &key.0),
+        }
+    }
+    pub fn sign(&self, buf: &[u8]) -> [u8; digest::SHA512_OUTPUT_LEN] {
+        let mut output = [0u8; digest::SHA512_OUTPUT_LEN];
+        output.copy_from_slice(hmac::sign(&self.signing_key, buf).as_ref());
+        output
+    }
+    pub fn verify(&self, data: &[u8], signature: &[u8]) -> bool {
+        hmac::verify(&self.verify_key, data, signature).is_ok()
     }
 }
 
@@ -113,5 +136,4 @@ mod tests {
         de.decrypt(&mut buf, &Nonce::from(1));
         assert_eq!(content, &buf[..len]);
     }
-
 }

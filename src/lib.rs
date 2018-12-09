@@ -11,10 +11,11 @@ const TAG: [u8; TAG_LEN as usize] = [0u8; TAG_LEN as usize];
 
 pub fn encrypt(key: Key, meta: CipherMeta) -> String {
     let en = Encryption::new(key);
+    let hmac = Hmac::new(key);
     let fr = FileReader::new(&meta.origin_file, meta.plain_chunk_size());
     let fw = FileWriter::new(&meta.gen_file, meta.gen_file_size, meta.cipher_chunk_size());
 
-    (0..meta.chunk_num)
+    let footprint = (0..meta.chunk_num)
         .into_par_iter()
         .map(|i| {
             let chunk = fr.get_chunk(i).unwrap();
@@ -26,20 +27,30 @@ pub fn encrypt(key: Key, meta: CipherMeta) -> String {
             en.encrypt(&mut buf, &Nonce::from(i));
             (i, buf)
         })
-        .for_each(|(i, buf)| {
+        .map(|(i, buf)| {
             let mut mmap_mut = fw.get_chunk_mut(i).unwrap().mmap_mut;
             mmap_mut.copy_from_slice(&buf);
             mmap_mut.flush().unwrap();
-        });
+
+            Vec::from(&buf[buf.len() - TAG_LEN..])
+        })
+        .reduce_with(|mut acc, x| {
+            acc.extend(x);
+            acc
+        })
+        .unwrap();
+    
+    let signature = hmac.sign(&footprint);
     meta.gen_file_path
 }
 
 pub fn decrypt(key: Key, meta: CipherMeta) -> String {
     let de = Decryption::new(key);
+    let hmac = Hmac::new(key);
     let fr = FileReader::new(&meta.origin_file, meta.cipher_chunk_size());
     let fw = FileWriter::new(&meta.gen_file, meta.gen_file_size, meta.plain_chunk_size());
 
-    (0..meta.chunk_num)
+    let footprint = (0..meta.chunk_num)
         .into_par_iter()
         .map(|i| {
             let chunk = fr.get_chunk(i).unwrap();
@@ -50,10 +61,20 @@ pub fn decrypt(key: Key, meta: CipherMeta) -> String {
             de.decrypt(&mut buf, &Nonce::from(i));
             (i, buf)
         })
-        .for_each(|(i, buf)| {
+        .map(|(i, buf)| {
             let mut mmap_mut = fw.get_chunk_mut(i).unwrap().mmap_mut;
-            mmap_mut.copy_from_slice(&buf[..buf.len() - TAG_LEN as usize]);
+            mmap_mut.copy_from_slice(&buf[..buf.len() - TAG_LEN]);
             mmap_mut.flush().unwrap();
-        });
+
+            Vec::from(&buf[buf.len() - TAG_LEN..])
+        })
+        .reduce_with(|mut acc, x| {
+            acc.extend(x);
+            acc
+        })
+        .unwrap();
+
+    hmac.verify(&footprint, );
+
     meta.gen_file_path
 }
