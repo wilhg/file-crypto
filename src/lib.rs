@@ -10,7 +10,7 @@ use rayon::prelude::*;
 const TAG: [u8; TAG_LEN as usize] = [0u8; TAG_LEN as usize];
 
 pub fn encrypt(key: &Key, meta: &CipherMeta) -> String {
-    let en = Encryption::new(key);
+    let cryption = Cryption::new(key);
     let hmac = Hmac::new(key);
     let fr = FileReader::new(meta);
     let fw = FileWriter::new(meta);
@@ -24,7 +24,7 @@ pub fn encrypt(key: &Key, meta: &CipherMeta) -> String {
             (i, buf)
         })
         .map(|(i, mut buf)| {
-            en.encrypt(&mut buf, &Nonce::from(i));
+            cryption.encrypt(&mut buf, &Nonce::from(i));
             (i, buf)
         })
         .map(|(i, buf)| {
@@ -49,7 +49,7 @@ pub fn encrypt(key: &Key, meta: &CipherMeta) -> String {
 }
 
 pub fn decrypt(key: &Key, meta: &CipherMeta) -> String {
-    let de = Decryption::new(key);
+    let cryption = Cryption::new(key);
     let hmac = Hmac::new(key);
     let fr = FileReader::new(meta);
     let fw = FileWriter::new(meta);
@@ -64,7 +64,7 @@ pub fn decrypt(key: &Key, meta: &CipherMeta) -> String {
             (i, buf)
         })
         .map(|(i, mut buf)| {
-            de.decrypt(&mut buf, &Nonce::from(i));
+            cryption.decrypt(&mut buf, &Nonce::from(i));
             (i, buf)
         })
         .map(|(i, buf)| {

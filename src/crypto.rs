@@ -53,34 +53,22 @@ impl From<&[u8]> for Key {
     }
 }
 
-pub struct Encryption {
-    key: SealingKey,
+pub struct Cryption {
+    sealing_key: SealingKey,
+    opening_key: OpeningKey,
 }
-impl Encryption {
+impl Cryption {
     pub fn new(key: &Key) -> Self {
-        Encryption {
-            key: SealingKey::new(&AES_256_GCM, &key.0).unwrap(),
+        Cryption {
+            sealing_key: SealingKey::new(&AES_256_GCM, &key.0).unwrap(),
+            opening_key: OpeningKey::new(&AES_256_GCM, &key.0).unwrap(),
         }
     }
-
     pub fn encrypt(&self, buf: &mut [u8], nonce: &Nonce) -> usize {
-        seal_in_place(&self.key, &nonce.0, &[], buf, AES_256_GCM.tag_len()).unwrap()
+        seal_in_place(&self.sealing_key, &nonce.0, &[], buf, AES_256_GCM.tag_len()).unwrap()
     }
-}
-
-pub struct Decryption {
-    key: OpeningKey,
-}
-
-impl Decryption {
-    pub fn new(key: &Key) -> Self {
-        Decryption {
-            key: OpeningKey::new(&AES_256_GCM, &key.0).unwrap(),
-        }
-    }
-
     pub fn decrypt<'a>(&self, buf: &'a mut [u8], nonce: &Nonce) -> &'a mut [u8] {
-        if let Ok(result) = open_in_place(&self.key, &nonce.0, &AD, 0, buf) {
+        if let Ok(result) = open_in_place(&self.opening_key, &nonce.0, &AD, 0, buf) {
             result
         } else {
             panic!("The file cannot be decrypted, maybe your are using a incorrect key :)");
@@ -113,7 +101,6 @@ impl Hmac {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn key() {
         let s = "abc";
@@ -124,16 +111,15 @@ mod tests {
     #[test]
     fn cipher() {
         let key = Key::new();
-        let en = Encryption::new(&key);
-        let de = Decryption::new(&key);
+        let cryption = Cryption::new(&key);
         let content = b"abcdefg";
         let len = content.len();
         let mut buf = content.to_vec();
 
         buf.extend_from_slice(&[0u8; 16]);
-        en.encrypt(&mut buf, &Nonce::from(1));
+        cryption.encrypt(&mut buf, &Nonce::from(1));
         assert_ne!(content, &buf[..len]);
-        de.decrypt(&mut buf, &Nonce::from(1));
+        cryption.decrypt(&mut buf, &Nonce::from(1));
         assert_eq!(content, &buf[..len]);
     }
 }

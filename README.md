@@ -32,7 +32,7 @@ file-crypto -d -k yourkey /your/any/file/path
 ## Built With
 
 * [Rayon](https://crates.io/crates/rayon/) - The parallelism library for parallelly reading/writing file
-* [Ring](https://crates.io/crates/ring/) - Using the AES-256-GCM for file cryption
+* [Ring](https://crates.io/crates/ring/) - Using the AES-256-GCM and HMAC-SHA512
 * [Memmap](https://crates.io/crates/memmap/) - For memory-mapped file IO
 * [Clap](https://crates.io/crates/clap/) - For parsing command line arguments
 
