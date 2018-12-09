@@ -58,7 +58,7 @@ fn main() {
           }
      };
      match meta.proc_type {
-          ProcessType::Encrypt => println!("The encrypted file is at: {}", encrypt(key, meta)),
-          ProcessType::Decrypt => println!("The decrypted file is at {}", decrypt(key, meta)),
+          ProcessType::Encrypt => println!("The encrypted file is at: {}", encrypt(&key, &meta)),
+          ProcessType::Decrypt => println!("The decrypted file is at {}", decrypt(&key, &meta)),
      };
 }

@@ -1,14 +1,17 @@
-use std::fs::{File, OpenOptions};
 use super::file::TAG_LEN;
+use std::fs::{File, OpenOptions};
+
+pub struct FileMeta {
+    pub file: File,
+    pub path: String,
+    pub size: usize,
+    pub chunk_size: usize,
+}
 
 pub struct CipherMeta {
-    pub origin_file: File,
-    pub origin_file_path: String,
-    pub gen_file: File,
-    pub gen_file_path: String,
-    pub gen_file_size: usize,
+    pub old_meta: FileMeta,
+    pub new_meta: FileMeta,
     pub proc_type: ProcessType,
-    chunk_size: usize,
     pub chunk_num: usize,
 }
 
@@ -54,28 +57,37 @@ impl CipherMeta {
         let chunk_size = Self::calc_chunk_size(f_size);
         let chunk_num = Self::calc_chunk_num(f_size, chunk_size);
         let gen_file_size = match proc_type {
-            ProcessType::Encrypt => f_size + chunk_num * TAG_LEN,
-            ProcessType::Decrypt => f_size - chunk_num * TAG_LEN,
+            ProcessType::Encrypt => f_size + chunk_num * TAG_LEN + HEADER_LEN,
+            ProcessType::Decrypt => f_size - chunk_num * TAG_LEN - HEADER_LEN,
+        };
+        gen_file.set_len(gen_file_size as u64).unwrap();
+
+        let old = FileMeta {
+            file: origin_file,
+            path: origin_file_path,
+            size: f_size as usize,
+            chunk_size: match proc_type {
+                ProcessType::Encrypt => chunk_size - TAG_LEN,
+                ProcessType::Decrypt => chunk_size,
+            },
+        };
+
+        let gen = FileMeta {
+            file: gen_file,
+            path: gen_file_path,
+            size: gen_file_size,
+            chunk_size: match proc_type {
+                ProcessType::Encrypt => chunk_size,
+                ProcessType::Decrypt => chunk_size - TAG_LEN,
+            },
         };
 
         CipherMeta {
-            origin_file,
-            origin_file_path,
-            gen_file,
-            gen_file_path,
-            gen_file_size,
+            old_meta: old,
+            new_meta: gen,
             proc_type,
-            chunk_size,
             chunk_num,
         }
-    }
-
-    pub fn plain_chunk_size(&self) -> usize {
-        self.chunk_size - TAG_LEN
-    }
-
-    pub fn cipher_chunk_size(&self) -> usize {
-        self.chunk_size
     }
 
     fn calc_chunk_size(f_size: usize) -> usize {
@@ -103,3 +115,4 @@ pub enum ProcessType {
 const SEALED_SUFFIX: &str = ".fc";
 const MIN_CHUNK_SIZE: usize = 0x100000; // 1Mb
 const PARALLEL_NUM: usize = 64;
+pub const HEADER_LEN: usize = 64; // SHA512 / 8

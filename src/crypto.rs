@@ -57,7 +57,7 @@ pub struct Encryption {
     key: SealingKey,
 }
 impl Encryption {
-    pub fn new(key: Key) -> Self {
+    pub fn new(key: &Key) -> Self {
         Encryption {
             key: SealingKey::new(&AES_256_GCM, &key.0).unwrap(),
         }
@@ -73,7 +73,7 @@ pub struct Decryption {
 }
 
 impl Decryption {
-    pub fn new(key: Key) -> Self {
+    pub fn new(key: &Key) -> Self {
         Decryption {
             key: OpeningKey::new(&AES_256_GCM, &key.0).unwrap(),
         }
@@ -94,7 +94,7 @@ pub struct Hmac {
 }
 
 impl Hmac {
-    pub fn new(key: Key) -> Self {
+    pub fn new(key: &Key) -> Self {
         Hmac {
             signing_key: hmac::SigningKey::new(&digest::SHA512, &key.0),
             verify_key: hmac::VerificationKey::new(&digest::SHA512, &key.0),
@@ -124,8 +124,8 @@ mod tests {
     #[test]
     fn cipher() {
         let key = Key::new();
-        let en = Encryption::new(key);
-        let de = Decryption::new(key);
+        let en = Encryption::new(&key);
+        let de = Decryption::new(&key);
         let content = b"abcdefg";
         let len = content.len();
         let mut buf = content.to_vec();

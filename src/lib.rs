@@ -9,11 +9,11 @@ use rayon::prelude::*;
 
 const TAG: [u8; TAG_LEN as usize] = [0u8; TAG_LEN as usize];
 
-pub fn encrypt(key: Key, meta: CipherMeta) -> String {
+pub fn encrypt(key: &Key, meta: &CipherMeta) -> String {
     let en = Encryption::new(key);
     let hmac = Hmac::new(key);
-    let fr = FileReader::new(&meta.origin_file, meta.plain_chunk_size());
-    let fw = FileWriter::new(&meta.gen_file, meta.gen_file_size, meta.cipher_chunk_size());
+    let fr = FileReader::new(meta);
+    let fw = FileWriter::new(meta);
 
     let footprint = (0..meta.chunk_num)
         .into_par_iter()
@@ -41,14 +41,20 @@ pub fn encrypt(key: Key, meta: CipherMeta) -> String {
         .unwrap();
     
     let signature = hmac.sign(&footprint);
-    meta.gen_file_path
+    let mut header = fw.header();
+    header.copy_from_slice(&signature);
+    header.flush().unwrap();
+
+    meta.new_meta.path.clone()
 }
 
-pub fn decrypt(key: Key, meta: CipherMeta) -> String {
+pub fn decrypt(key: &Key, meta: &CipherMeta) -> String {
     let de = Decryption::new(key);
     let hmac = Hmac::new(key);
-    let fr = FileReader::new(&meta.origin_file, meta.cipher_chunk_size());
-    let fw = FileWriter::new(&meta.gen_file, meta.gen_file_size, meta.plain_chunk_size());
+    let fr = FileReader::new(meta);
+    let fw = FileWriter::new(meta);
+
+    let header = fr.header();
 
     let footprint = (0..meta.chunk_num)
         .into_par_iter()
@@ -74,7 +80,9 @@ pub fn decrypt(key: Key, meta: CipherMeta) -> String {
         })
         .unwrap();
     
-    // TODO hmac.verify(&footprint, );
+    if !hmac.verify(&footprint, header.as_ref()) {
+        panic!("Footprint not match.");
+    }
 
-    meta.gen_file_path
+    meta.new_meta.path.clone()
 }

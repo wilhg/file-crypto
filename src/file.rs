@@ -1,23 +1,29 @@
 use memmap::{Mmap, MmapMut, MmapOptions};
 use std::fs::File;
+use super::meta::*;
 
 pub struct FileReader<'a> {
     file: &'a File,
     file_size: usize,
     chunk_size: usize,
+    proc_type: ProcessType,
 }
 
 impl<'a> FileReader<'a> {
-    pub fn new(file: &File, chunk_size: usize) -> FileReader {
+    pub fn new(meta: &CipherMeta) -> FileReader {
         FileReader {
-            file,
-            file_size: file.metadata().unwrap().len() as usize,
-            chunk_size,
+            file: &meta.old_meta.file,
+            file_size: meta.old_meta.size,
+            chunk_size: meta.old_meta.chunk_size,
+            proc_type: meta.proc_type,
         }
     }
 
     pub fn get_chunk(&self, page: usize) -> Option<Chunk> {
-        let offset = page * self.chunk_size;
+        let offset = match self.proc_type {
+            ProcessType::Encrypt => page * self.chunk_size,
+            ProcessType::Decrypt => page * self.chunk_size + HEADER_LEN,
+        };
         if offset >= self.file_size {
             return None;
         }
@@ -32,6 +38,12 @@ impl<'a> FileReader<'a> {
         })
     }
 
+    pub fn header(&self) -> Mmap {
+        let mut mmap_option = MmapOptions::new();
+        mmap_option.len(HEADER_LEN);
+        unsafe { mmap_option.map(&self.file) }.unwrap()
+    }
+
     pub fn is_page_available(&self, page: usize) -> bool {
         page * self.chunk_size >= self.file_size
     }
@@ -41,20 +53,24 @@ pub struct FileWriter<'a> {
     file: &'a File,
     file_size: usize,
     chunk_size: usize,
+    proc_type: ProcessType,
 }
 
 impl<'a> FileWriter<'a> {
-    pub fn new(file: &File, file_size: usize, chunk_size: usize) -> FileWriter {
-        file.set_len(file_size as u64).unwrap();
+    pub fn new(meta: &CipherMeta) -> FileWriter {
         FileWriter {
-            file,
-            file_size,
-            chunk_size,
+            file: &meta.new_meta.file,
+            file_size: meta.new_meta.size,
+            chunk_size: meta.new_meta.chunk_size,
+            proc_type: meta.proc_type,
         }
     }
 
     pub fn get_chunk_mut(&self, page: usize) -> Option<ChunkMut> {
-        let offset = page * self.chunk_size;
+        let offset = match self.proc_type {
+            ProcessType::Encrypt => page * self.chunk_size + HEADER_LEN,
+            ProcessType::Decrypt => page * self.chunk_size,
+        };
         if offset >= self.file_size {
             return None;
         }
@@ -72,6 +88,12 @@ impl<'a> FileWriter<'a> {
     pub fn is_page_available(&self, page: usize) -> bool {
         page * self.chunk_size >= self.file_size
     }
+
+    pub fn header(&self) -> MmapMut {
+        let mut mmap_option = MmapOptions::new();
+        mmap_option.len(HEADER_LEN);
+        unsafe { mmap_option.map_mut(&self.file) }.unwrap()
+    }
 }
 
 pub struct Chunk {
@@ -84,3 +106,4 @@ pub struct ChunkMut {
 }
 
 pub const TAG_LEN: usize = 16;
+pub const HEADER_LEN: usize = 64; // SHA512 / 8
