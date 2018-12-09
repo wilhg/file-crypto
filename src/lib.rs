@@ -73,8 +73,8 @@ pub fn decrypt(key: Key, meta: CipherMeta) -> String {
             acc
         })
         .unwrap();
-
-    hmac.verify(&footprint, );
+    
+    // TODO hmac.verify(&footprint, );
 
     meta.gen_file_path
 }
