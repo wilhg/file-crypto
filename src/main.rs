@@ -10,7 +10,7 @@ extern crate clap;
 use clap::{App, Arg};
 fn main() {
      let matches = App::new("File Crypto")
-          .version("0.1.0")
+          .version("0.2.0")
           .author("William Huang <william.hng@outlook.com>")
           .about("file-crypto is a platform-cross command line tool for fastly encrypting / decrypting any file with AES-256-GCM")
           .arg(Arg::with_name("encrypt")
