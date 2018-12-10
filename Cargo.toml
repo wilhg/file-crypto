@@ -3,6 +3,11 @@ name = "file-crypto"
 version = "0.2.0"
 edition = "2018"
 
+repository = "https://github.com/cuebyte/file-crypto/"
+description = "A high performace command line tool for encrypting / decrypting any file"
+keywords = ["file-crypto", "crypto"]
+license = "APACHE/MIT"
+
 [dependencies]
 ring = "0"
 base64 = "0"
