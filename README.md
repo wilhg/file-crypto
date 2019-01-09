@@ -1,5 +1,6 @@
 # File Crypto
-[![Build Status](https://travis-ci.com/cuebyte/file-crypto.svg?branch=master)](https://travis-ci.com/cuebyte/file-crypto)
+[![Travis Build Status](https://travis-ci.com/cuebyte/file-crypto.svg?branch=master)](https://travis-ci.com/cuebyte/file-crypto)
+[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/32r7s2skrgm9ubva?svg=true)](https://ci.appveyor.com/api/projects/status/32r7s2skrgm9ubva?svg=true)
 
 
 A high performace cross-platform command line tool for fastly encrypting / decrypting any file with AES-256-GCM, verifying the integrity and the security with HMAC-SHA512.
