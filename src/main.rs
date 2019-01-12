@@ -1,9 +1,9 @@
 pub mod crypto;
 pub mod file;
-pub mod meta;
+pub mod ctrl;
 
 use file_crypto::crypto::*;
-use file_crypto::meta::*;
+use file_crypto::ctrl::*;
 use file_crypto::*;
 
 extern crate clap;
@@ -37,10 +37,10 @@ fn main() {
      let encrypt_mode = (matches.is_present("encrypt") as u8) << 1;
      let decrypt_mode = matches.is_present("decrypt") as u8;
      let meta = match encrypt_mode | decrypt_mode {
-          0b01 => CipherMeta::init_with_type(path, ProcessType::Decrypt),
-          0b10 => CipherMeta::init_with_type(path, ProcessType::Encrypt),
+          0b01 => CipherCtrl::init_with_type(path, ProcessType::Decrypt),
+          0b10 => CipherCtrl::init_with_type(path, ProcessType::Encrypt),
           0b11 => panic!("Cannot set encrypt-mode and decrypt-mode at the same time"),
-          _ => CipherMeta::init(path),
+          _ => CipherCtrl::init(path),
      };
 
      let key = match matches.value_of("key") {

@@ -1,4 +1,4 @@
-use super::meta::*;
+use super::ctrl::*;
 use memmap::{Mmap, MmapMut, MmapOptions};
 use std::fs::File;
 use byteorder::{BE, ByteOrder};
@@ -11,12 +11,12 @@ pub struct FileReader<'a> {
 }
 
 impl<'a> FileReader<'a> {
-    pub fn new(meta: &CipherMeta) -> FileReader {
+    pub fn new(ctrl: &CipherCtrl) -> FileReader {
         FileReader {
-            file: &meta.old_meta.file,
-            file_size: meta.old_meta.size,
-            chunk_size: meta.old_meta.chunk_size,
-            proc_type: meta.proc_type,
+            file: &ctrl.old_meta.file,
+            file_size: ctrl.old_meta.size,
+            chunk_size: ctrl.old_meta.chunk_size,
+            proc_type: ctrl.proc_type,
         }
     }
 
@@ -58,12 +58,12 @@ pub struct FileWriter<'a> {
 }
 
 impl<'a> FileWriter<'a> {
-    pub fn new(meta: &CipherMeta) -> FileWriter {
+    pub fn new(ctrl: &CipherCtrl) -> FileWriter {
         FileWriter {
-            file: &meta.new_meta.file,
-            file_size: meta.new_meta.size,
-            chunk_size: meta.new_meta.chunk_size,
-            proc_type: meta.proc_type,
+            file: &ctrl.new_meta.file,
+            file_size: ctrl.new_meta.size,
+            chunk_size: ctrl.new_meta.chunk_size,
+            proc_type: ctrl.proc_type,
         }
     }
 

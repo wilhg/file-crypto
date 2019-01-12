@@ -1,21 +1,21 @@
 pub mod crypto;
 pub mod file;
-pub mod meta;
+pub mod ctrl;
 
 use self::crypto::*;
 use self::file::*;
-use self::meta::*;
+use self::ctrl::*;
 use rayon::prelude::*;
 
 const TAG: [u8; TAG_LEN as usize] = [0u8; TAG_LEN as usize];
 
-pub fn encrypt(key: &Key, meta: &CipherMeta) -> String {
+pub fn encrypt(key: &Key, ctrl: &CipherCtrl) -> String {
     let cryption = Cryption::new(key);
     let hmac = Hmac::new(key);
-    let fr = FileReader::new(meta);
-    let fw = FileWriter::new(meta);
+    let fr = FileReader::new(ctrl);
+    let fw = FileWriter::new(ctrl);
 
-    let footprint = (0..meta.chunk_num)
+    let footprint = (0..ctrl.chunk_num)
         .into_par_iter()
         .map(|i| {
             let chunk = fr.get_chunk(i).unwrap();
@@ -45,18 +45,18 @@ pub fn encrypt(key: &Key, meta: &CipherMeta) -> String {
     header.copy_from_slice(&signature);
     header.flush().unwrap();
 
-    meta.new_meta.path.clone()
+    ctrl.new_meta.path.clone()
 }
 
-pub fn decrypt(key: &Key, meta: &CipherMeta) -> String {
+pub fn decrypt(key: &Key, ctrl: &CipherCtrl) -> String {
     let cryption = Cryption::new(key);
     let hmac = Hmac::new(key);
-    let fr = FileReader::new(meta);
-    let fw = FileWriter::new(meta);
+    let fr = FileReader::new(ctrl);
+    let fw = FileWriter::new(ctrl);
 
     let header = fr.header();
 
-    let footprint = (0..meta.chunk_num)
+    let footprint = (0..ctrl.chunk_num)
         .into_par_iter()
         .map(|i| {
             let chunk = fr.get_chunk(i).unwrap();
@@ -84,5 +84,5 @@ pub fn decrypt(key: &Key, meta: &CipherMeta) -> String {
         panic!("Footprint not match.");
     }
 
-    meta.new_meta.path.clone()
+    ctrl.new_meta.path.clone()
 }

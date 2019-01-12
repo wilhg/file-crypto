@@ -4,7 +4,7 @@ extern crate rayon;
 extern crate ring;
 
 use file_crypto::crypto::*;
-use file_crypto::meta::*;
+use file_crypto::ctrl::*;
 use file_crypto::*;
 use std::time::Instant;
 use walkdir::WalkDir;
@@ -12,11 +12,11 @@ use walkdir::WalkDir;
 #[test]
 fn cipher_integration() {
     let key = Key::new();
-    let meta0 = CipherMeta::init("./Cargo.lock");
-    // let meta0 = CipherMeta::init("/Users/wei.huang/Downloads/cipher/googlechrome.dmg");
+    let meta0 = CipherCtrl::init("./Cargo.lock");
+    // let meta0 = CipherCtrl::init("/Users/wei.huang/Downloads/cipher/googlechrome.dmg");
     let gen_path = encrypt(&key, &meta0);
 
-    let meta1 = CipherMeta::init(&gen_path);
+    let meta1 = CipherCtrl::init(&gen_path);
     decrypt(&key, &meta1);
 }
 
@@ -46,7 +46,7 @@ fn encrypt_bench() {
     let key = Key::new();
     let mb = 1048576.0;
     for path in get_files_from("/Users/wei.huang/Downloads/cipher") {
-        let meta = CipherMeta::init(&path);
+        let meta = CipherCtrl::init(&path);
         let name = meta.new_meta.path.clone();
         let size = meta.new_meta.size;
         println!("Name: {}", name);
