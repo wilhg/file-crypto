@@ -1,6 +1,7 @@
+use super::meta::*;
 use memmap::{Mmap, MmapMut, MmapOptions};
 use std::fs::File;
-use super::meta::*;
+use byteorder::{BE, ByteOrder};
 
 pub struct FileReader<'a> {
     file: &'a File,
@@ -93,6 +94,40 @@ impl<'a> FileWriter<'a> {
         let mut mmap_option = MmapOptions::new();
         mmap_option.len(HEADER_LEN);
         unsafe { mmap_option.map_mut(&self.file) }.unwrap()
+    }
+}
+
+pub struct Header {
+    pub file_size: u64,
+    pub signature: [u8; 64],
+}
+
+impl Header {
+    pub fn new() -> Self {
+        Header {
+            file_size: 0u64,
+            signature: [0u8; 64],
+        }
+    }
+
+    pub fn from_slice(buf: &[u8]) -> Self {
+        if buf.len() != 72 {
+            panic!("File format is incorrect.");
+        };
+        let mut sign = [0u8; 64];
+        sign.copy_from_slice(&buf[8..]);
+        Header {
+            file_size: BE::read_u64(&buf[..8]),
+            signature: sign,
+        }
+    }
+
+    pub fn write(&self, buf: &mut [u8]) {
+        if buf.len() != 72 {
+            panic!("Internal error.");
+        };
+        BE::write_u64(&mut buf[..8], self.file_size);
+        buf[8..].copy_from_slice(&self.signature);
     }
 }
 

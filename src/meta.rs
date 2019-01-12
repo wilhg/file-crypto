@@ -54,8 +54,12 @@ impl CipherMeta {
         if f_size == 0 {
             panic!("The input file should not be empty.")
         }
-        let chunk_size = Self::calc_chunk_size(f_size);
-        let chunk_num = Self::calc_chunk_num(f_size, chunk_size);
+        let (chunk_size, chunk_num) = match proc_type {
+            ProcessType::Encrypt => Self::calc_en_chunk_size(f_size),
+            ProcessType::Decrypt => Self::calc_de_chunk_size(f_size),
+        };
+        println!("e={} d={}", chunk_size, chunk_num);
+        // let chunk_num = Self::calc_chunk_num(f_size, chunk_size);
         let gen_file_size = match proc_type {
             ProcessType::Encrypt => f_size + chunk_num * TAG_LEN + HEADER_LEN,
             ProcessType::Decrypt => f_size - chunk_num * TAG_LEN - HEADER_LEN,
@@ -90,20 +94,33 @@ impl CipherMeta {
         }
     }
 
-    fn calc_chunk_size(f_size: usize) -> usize {
-        if f_size < MIN_CHUNK_SIZE * PARALLEL_NUM {
+    fn calc_en_chunk_size(f_size: usize) -> (usize, usize) {
+        let chunk_size = if f_size < (MIN_CHUNK_SIZE - TAG_LEN) * PARALLEL_NUM {
             MIN_CHUNK_SIZE
         } else {
             f_size / PARALLEL_NUM
-        }
-    }
-
-    fn calc_chunk_num(f_size: usize, chunk_size: usize) -> usize {
-        if f_size % chunk_size == 0 {
+        };
+        let chunks = if f_size % chunk_size == 0 {
             f_size / chunk_size
         } else {
             f_size / chunk_size + 1
-        }
+        };
+        (chunk_size, chunks)
+    }
+
+    fn calc_de_chunk_size(f_size: usize) -> (usize, usize) {
+        let f_size = f_size - HEADER_LEN;
+        let chunk_size = if f_size < MIN_CHUNK_SIZE * PARALLEL_NUM {
+            MIN_CHUNK_SIZE
+        } else {
+            f_size / PARALLEL_NUM
+        };
+        let chunks = if f_size % chunk_size == 0 {
+            f_size / chunk_size
+        } else {
+            f_size / chunk_size + 1
+        };
+        (chunk_size, chunks)
     }
 }
 #[derive(PartialEq, Clone, Copy)]
@@ -113,6 +130,7 @@ pub enum ProcessType {
 }
 
 const SEALED_SUFFIX: &str = ".fc";
-const MIN_CHUNK_SIZE: usize = 0x100000; // 1Mb
+// const MIN_CHUNK_SIZE: usize = 0x100000; // 1Mb
+const MIN_CHUNK_SIZE: usize = 100; // 1Mb
 const PARALLEL_NUM: usize = 64;
 pub const HEADER_LEN: usize = 64; // SHA512 / 8

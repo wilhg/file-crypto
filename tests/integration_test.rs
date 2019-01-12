@@ -13,6 +13,7 @@ use walkdir::WalkDir;
 fn cipher_integration() {
     let key = Key::new();
     let meta0 = CipherMeta::init("./Cargo.lock");
+    // let meta0 = CipherMeta::init("/Users/wei.huang/Downloads/cipher/googlechrome.dmg");
     let gen_path = encrypt(&key, &meta0);
 
     let meta1 = CipherMeta::init(&gen_path);

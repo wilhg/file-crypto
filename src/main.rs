@@ -45,7 +45,6 @@ fn main() {
 
      let key = match matches.value_of("key") {
           Some(s) => {
-               println!("The key is: {}\n (Please keep the key in the safe way.)", s);
                Key::from(s)
           }
           None => {
