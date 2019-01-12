@@ -9,7 +9,7 @@ keywords = ["file-crypto", "crypto"]
 license = "APACHE/MIT"
 
 [dependencies]
-ring = "0"
+ring = "0.13"
 base64 = "0"
 memmap = "0"
 rayon = "1"
