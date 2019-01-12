@@ -1,7 +1,7 @@
 use super::ctrl::*;
+use byteorder::{ByteOrder, BE};
 use memmap::{Mmap, MmapMut, MmapOptions};
 use std::fs::File;
-use byteorder::{BE, ByteOrder};
 
 pub struct FileReader<'a> {
     file: &'a File,
@@ -49,7 +49,6 @@ impl<'a> FileReader<'a> {
         page * self.chunk_size >= self.file_size
     }
 }
-
 pub struct FileWriter<'a> {
     file: &'a File,
     file_size: usize,
@@ -99,35 +98,45 @@ impl<'a> FileWriter<'a> {
 
 pub struct Header {
     pub file_size: u64,
+    pub chunk_size: u64,
     pub signature: [u8; 64],
 }
 
 impl Header {
-    pub fn new() -> Self {
+    pub fn new(file_size: u64, chunk_size: u64, signature: [u8; 64]) -> Self {
         Header {
-            file_size: 0u64,
-            signature: [0u8; 64],
+            file_size,
+            chunk_size,
+            signature,
         }
     }
 
     pub fn from_slice(buf: &[u8]) -> Self {
-        if buf.len() != 72 {
+        if buf.len() != HEADER_LEN {
             panic!("File format is incorrect.");
         };
         let mut sign = [0u8; 64];
-        sign.copy_from_slice(&buf[8..]);
+        sign.copy_from_slice(&buf[16..]);
         Header {
             file_size: BE::read_u64(&buf[..8]),
+            chunk_size: BE::read_u64(&buf[8..16]),
             signature: sign,
         }
     }
 
-    pub fn write(&self, buf: &mut [u8]) {
-        if buf.len() != 72 {
-            panic!("Internal error.");
-        };
+    pub fn from_file(file: &File) -> Self {
+        let mut mmap_option = MmapOptions::new();
+        mmap_option.len(HEADER_LEN);
+        let mmap = unsafe{mmap_option.map(file)}.unwrap();
+        Self::from_slice(mmap.as_ref())
+    }
+
+    pub fn data(&self) -> [u8; HEADER_LEN] {
+        let mut buf = [0u8; HEADER_LEN];
         BE::write_u64(&mut buf[..8], self.file_size);
-        buf[8..].copy_from_slice(&self.signature);
+        BE::write_u64(&mut buf[8..16], self.chunk_size);
+        buf[16..].copy_from_slice(&self.signature);
+        buf
     }
 }
 
@@ -141,4 +150,4 @@ pub struct ChunkMut {
 }
 
 pub const TAG_LEN: usize = 16;
-pub const HEADER_LEN: usize = 64; // SHA512 / 8
+pub const HEADER_LEN: usize = 80; // SHA512 / 8 + u64 + u64
