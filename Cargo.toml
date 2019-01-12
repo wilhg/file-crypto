@@ -6,7 +6,7 @@ authors = ["William <william.hng@outlook.com>"]
 repository = "https://github.com/cuebyte/file-crypto/"
 description = "A high performace command line tool for encrypting / decrypting any file"
 keywords = ["file-crypto", "crypto"]
-license = "APACHE/MIT"
+license = "Apache-2.0/MIT"
 
 [dependencies]
 ring = "0.13"
